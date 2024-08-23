@@ -1,13 +1,13 @@
-version: '3.8'
-
 services:
   app:
-    build:
+    build: 
       context: .
       args:
-        DEV: "true"  # Using correct syntax for build args
+        - DEV=true
     ports:
       - "8000:8000"
     volumes:
-      - ./app:/app  # Ensure this is correct and accessible
-    command: sh -c "python manage.py runserver 0.0.0.0:8000"
+      - ./app:/app
+    command: >
+      sh -c "python manage.py runserver 0.0.0.0:8000"
+
