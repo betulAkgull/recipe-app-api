@@ -7,4 +7,3 @@ urlpatterns = [
 ]
 
 
-one = 1
