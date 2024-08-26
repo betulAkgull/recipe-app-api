@@ -7,33 +7,25 @@ ENV PATH="/py/bin:$PATH"
 # Create a directory for the app
 WORKDIR /app
 
-# Copy the requirements.txt file into the container
+# Copy the requirements.txt files into the container
 COPY ./requirements.txt /tmp/requirements.txt
-
 COPY ./requirements.dev.txt /tmp/requirements.dev.txt
 
-EXPOSE 8000
+# Install PostgreSQL client and build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-ARG DEV=false
+# Step 1: Create a virtual environment and install dependencies
+RUN python -m venv /py && \
+    /py/bin/pip install --upgrade pip && \
+    /py/bin/pip install -r /tmp/requirements.txt && \
+    if [ "$DEV" = "true" ]; then /py/bin/pip install -r /tmp/requirements.dev.txt; fi && \
+    rm -rf /tmp
 
-
-# Step 1: Create a virtual environment
-RUN python -m venv /py
-
-# Step 2: Upgrade pip in the virtual environment
-RUN /py/bin/pip install --upgrade pip
-
-# Step 3: Install the requirements
-RUN /py/bin/pip install -r /tmp/requirements.txt
-
-RUN if [ "$DEV" = "true" ]; then \
-    /py/bin/pip install -r /tmp/requirements.dev.txt; \
-fi 
-
-# Step 4: Clean up temporary files
-RUN rm -rf /tmp
-
-# Step 5: Add a user to run the application
+# Step 2: Add a user to run the application
 RUN adduser --disabled-password --no-create-home django-user
 
 # Copy the rest of the application code
@@ -41,3 +33,9 @@ COPY . /app
 
 # Switch to the non-root user
 USER django-user
+
+# Expose the application port
+EXPOSE 8000
+
+# Default command
+CMD ["sh", "-c", "python manage.py runserver 0.0.0.0:8000"]
