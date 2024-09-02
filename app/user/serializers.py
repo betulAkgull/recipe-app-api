@@ -18,7 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         "update and return user"
-        password = validated_data('password', None)
+        password = validated_data.pop('password', None)
         user = super().update(instance,validated_data)
 
         if password:
@@ -27,7 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
 
         return user
 
-    
+
 
 class AuthTokenSerializer(serializers.Serializer):
     email = serializers.EmailField()
